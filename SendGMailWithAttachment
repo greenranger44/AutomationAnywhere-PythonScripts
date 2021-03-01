@@ -1,0 +1,30 @@
+import pandas as pd
+import os
+from email.message import EmailMessage
+import smtplib
+import pathlib
+
+
+def send_email(vInput_Params):
+    try:
+
+        EMAIL_USER, EMAIL_PASS, to_address, email_subject, message_content, file_path = vInput_Params
+        msg = EmailMessage()
+        msg['Subject'] = email_subject
+        msg['From'] = EMAIL_USER
+        msg['To'] = to_address
+        msg.add_alternative(message_content, subtype='html')
+        with open(file_path, 'rb') as f:
+            data = f.read()
+            f.close()
+        #encoded = base64.b64encode(data).decode()
+        file = os.path.basename(file_path)
+        msg.add_attachment(data, maintype='application',
+                           subtype='octet-stream', filename=file)
+
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
+            smtp.login(EMAIL_USER, EMAIL_PASS)
+            smtp.send_message(msg)
+
+    except Exception as e:
+        return getattr(e, 'message', repr(e))
